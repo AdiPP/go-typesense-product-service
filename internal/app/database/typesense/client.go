@@ -1,18 +1,38 @@
 package typesense
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/typesense/typesense-go/v3/typesense"
 )
 
-type TypesenseClient struct {
-	typesenseClient *typesense.Client
+type Client struct {
+	client *typesense.Client
 }
 
-func NewTypesenseClient() *TypesenseClient {
-	client := &TypesenseClient{
-		typesenseClient: typesense.NewClient(
+func (c *Client) init() (err error) {
+	ok, err := c.client.Health(context.Background(), 2*time.Second)
+	if err != nil {
+		return
+	}
+
+	if !ok {
+		err = fmt.Errorf("failed connect to typesense client")
+		return
+	}
+
+	log.Println("success connect to typesense client")
+
+	err = c.initProductSchema()
+	return
+}
+
+func NewClient() (c *Client, err error) {
+	c = &Client{
+		client: typesense.NewClient(
 			typesense.WithNodes([]string{
 				"http://localhost:8108",
 			}),
@@ -21,7 +41,7 @@ func NewTypesenseClient() *TypesenseClient {
 		),
 	}
 
-	client.initProductSchema()
+	c.init()
 
-	return client
+	return
 }
