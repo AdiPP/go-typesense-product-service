@@ -7,18 +7,20 @@ import (
 	"time"
 
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
 	engine          *gin.Engine
 	typesenseClient *typesense.Client
+	productService  *service.ProductService
 }
 
 func (r *Server) initRouter() {
 	r.engine.GET("/ping", newPingHandler().handle)
-	r.engine.PATCH("/products", newUpsertProductHandler(r.typesenseClient).handle)
-	r.engine.DELETE("/products", newdeleteProductHandler(r.typesenseClient).handle)
+	r.engine.PATCH("/products", newUpsertProductHandler(r.productService).handle)
+	r.engine.DELETE("/products", newdeleteProductHandler(r.productService).handle)
 }
 
 func (s *Server) ListenAndServe() (err error) {
@@ -43,10 +45,11 @@ func (s *Server) ListenAndServe() (err error) {
 	return
 }
 
-func NewServer(typesenseClient *typesense.Client) *Server {
+func NewServer(typesenseClient *typesense.Client, productService *service.ProductService) *Server {
 	o := new(Server)
 	o.engine = gin.Default()
 	o.typesenseClient = typesenseClient
+	o.productService = productService
 
 	o.initRouter()
 

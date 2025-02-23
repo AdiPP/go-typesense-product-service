@@ -3,13 +3,12 @@ package http
 import (
 	"net/http"
 
-	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
-	"github.com/AdiPP/go-typesense-product-service/internal/app/entity"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/gin-gonic/gin"
 )
 
 type upsertProductHandler struct {
-	client *typesense.Client
+	productService *service.ProductService
 }
 
 type upsertProductRequest struct {
@@ -24,7 +23,7 @@ func (h *upsertProductHandler) handle(c *gin.Context) {
 		return
 	}
 
-	product, err := h.client.UpsertProduct(entity.Product{
+	product, err := h.productService.Upsert(&service.UpsertProductParam{
 		ProductID:   req.ProductID,
 		ProductName: req.ProductName,
 	})
@@ -36,8 +35,8 @@ func (h *upsertProductHandler) handle(c *gin.Context) {
 	c.JSON(http.StatusOK, product)
 }
 
-func newUpsertProductHandler(client *typesense.Client) *upsertProductHandler {
+func newUpsertProductHandler(productService *service.ProductService) *upsertProductHandler {
 	o := new(upsertProductHandler)
-	o.client = client
+	o.productService = productService
 	return o
 }

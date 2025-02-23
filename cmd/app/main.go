@@ -5,6 +5,7 @@ import (
 
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
 	http2 "github.com/AdiPP/go-typesense-product-service/internal/app/http"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 )
 
 func run() (err error) {
@@ -15,7 +16,9 @@ func run() (err error) {
 		return
 	}
 
-	err = http2.NewServer(typesenseClient).ListenAndServe()
+	service := service.NewService(typesenseClient)
+	
+	err = http2.NewServer(typesenseClient, service).ListenAndServe()
 	if err != nil {
 		return
 	}

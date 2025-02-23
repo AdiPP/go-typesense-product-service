@@ -3,12 +3,12 @@ package http
 import (
 	"net/http"
 
-	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/gin-gonic/gin"
 )
 
 type deleteProductHandler struct {
-	client *typesense.Client
+	productService *service.ProductService
 }
 
 type deleteProductRequest struct {
@@ -22,13 +22,9 @@ func (h *deleteProductHandler) handle(c *gin.Context) {
 		return
 	}
 
-	product, err := h.client.FindProduct(req.ProductID)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-
-	product, err = h.client.DeleteProduct(product)
+	product, err := h.productService.Delete(&service.DeleteProductParam{
+		ProductID: req.ProductID,
+	})
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
 		return
@@ -37,8 +33,8 @@ func (h *deleteProductHandler) handle(c *gin.Context) {
 	c.JSON(http.StatusOK, product)
 }
 
-func newdeleteProductHandler(client *typesense.Client) *deleteProductHandler {
+func newdeleteProductHandler(productService *service.ProductService) *deleteProductHandler {
 	o := new(deleteProductHandler)
-	o.client = client
+	o.productService = productService
 	return o
 }
