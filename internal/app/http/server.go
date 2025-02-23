@@ -17,7 +17,8 @@ type Server struct {
 
 func (r *Server) initRouter() {
 	r.engine.GET("/ping", newPingHandler().handle)
-	r.engine.POST("/products", newAddProductHandler(r.typesenseClient).handle)
+	r.engine.PATCH("/products", newUpsertProductHandler(r.typesenseClient).handle)
+	r.engine.DELETE("/products", newdeleteProductHandler(r.typesenseClient).handle)
 }
 
 func (s *Server) ListenAndServe() (err error) {

@@ -1,4 +1,4 @@
-package app
+package entity
 
 type Product struct {
 	ProductID   int64
