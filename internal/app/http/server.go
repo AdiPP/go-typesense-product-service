@@ -6,30 +6,27 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
+	cfg             config.App
 	engine          *gin.Engine
 	typesenseClient *typesense.Client
 	productService  *service.ProductService
 }
 
-func (r *Server) initRouter() {
-	r.engine.GET("/ping", newPingHandler().handle)
-	r.engine.PATCH("/products", newUpsertProductHandler(r.productService).handle)
-	r.engine.DELETE("/products", newdeleteProductHandler(r.productService).handle)
-}
-
 func (s *Server) ListenAndServe() (err error) {
-	port := "8000"
+	host := s.cfg.Host
+	port := s.cfg.Port
 
-	log.Printf("App running on port : %v \n", port)
+	log.Printf("App running on %s:%v \n", host, port)
 
 	server := &http.Server{
-		Addr:              fmt.Sprintf("0.0.0.0:%v", port),
+		Addr:              fmt.Sprintf("%s:%v", host, port),
 		Handler:           s.engine.Handler(),
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      60 * time.Second,
@@ -42,16 +39,27 @@ func (s *Server) ListenAndServe() (err error) {
 		err = fmt.Errorf("failed running App on port : %v. error: %v", port, err)
 		return
 	}
+
 	return
 }
 
-func NewServer(typesenseClient *typesense.Client, productService *service.ProductService) *Server {
-	o := new(Server)
-	o.engine = gin.Default()
-	o.typesenseClient = typesenseClient
-	o.productService = productService
+func NewServer(cfg config.App, typesenseClient *typesense.Client, productService *service.ProductService) *Server {
+	switch cfg.GetEnv() {
+	case "development":
+		gin.SetMode(gin.DebugMode)
+	case "staging":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-	o.initRouter()
+	s := new(Server)
+	s.cfg = cfg
+	s.engine = gin.Default()
+	s.typesenseClient = typesenseClient
+	s.productService = productService
 
-	return o
+	s.initRouter()
+
+	return s
 }

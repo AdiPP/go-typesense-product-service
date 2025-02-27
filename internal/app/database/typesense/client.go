@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
 	"github.com/typesense/typesense-go/v3/typesense"
 )
 
@@ -24,24 +25,23 @@ func (c *Client) init() (err error) {
 		return
 	}
 
-	log.Println("success connect to typesense client")
+	log.Println("Success connect to typesense client")
 
 	err = c.initProductSchema()
 	return
 }
 
-func NewClient() (c *Client, err error) {
+func NewClient(cfg config.Typesense) (c *Client, err error) {
 	c = &Client{
 		client: typesense.NewClient(
 			typesense.WithNodes([]string{
-				"http://localhost:8108",
+				fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
 			}),
-			typesense.WithAPIKey("xyz"),
+			typesense.WithAPIKey(cfg.APIKey),
 			typesense.WithConnectionTimeout(2*time.Second),
 		),
 	}
 
-	c.init()
-
+	err = c.init()
 	return
 }
