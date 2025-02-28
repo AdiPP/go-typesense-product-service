@@ -39,7 +39,7 @@ func (s *ProductService) Delete(param *DeleteProductParam) (product entity.Produ
 	return
 }
 
-func NewService(client *typesense.Client) *ProductService {
+func NewProductService(client *typesense.Client) *ProductService {
 	o := new(ProductService)
 	o.client = client
 	return o

@@ -22,7 +22,7 @@ func run() (err error) {
 		return
 	}
 
-	service := service.NewService(typesenseClient)
+	service := service.NewProductService(typesenseClient)
 	server := http2.NewServer(cfg.App, typesenseClient, service)
 
 	err = server.ListenAndServe()
