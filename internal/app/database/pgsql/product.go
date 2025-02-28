@@ -1,14 +1,12 @@
 package pgsql
 
 import (
-	"errors"
 	"time"
 
-	"github.com/AdiPP/go-typesense-product-service/internal/app/entity"
 	"github.com/doug-martin/goqu/v9"
 )
 
-type FindProductByIdResult struct {
+type FindProdctByIdsProduct struct {
 	ProductID              int64      `json:"product_id" db:"product_id"`
 	ProductConditionID     int        `json:"product_condition_id" db:"product_condition_id"`
 	ShippingTypeID         *int       `json:"shipping_type_id,omitempty" db:"shipping_type_id"`
@@ -40,23 +38,31 @@ type FindProductByIdResult struct {
 	PreorderTypeName       *string    `json:"preorder_type_name,omitempty" db:"preorder_type_name"`
 }
 
-func (r *Repository) FindProductById(productId int64) (result FindProductByIdResult, err error) {
-	result = FindProductByIdResult{}
+type FindProductByIdResult struct {
+	Products []FindProdctByIdsProduct
+}
+
+func (r *Repository) FindAllProductByIds(productIds []int64) (result FindProductByIdResult, err error) {
+	result = FindProductByIdResult{
+		Products: []FindProdctByIdsProduct{},
+	}
+
+	if len(productIds) <= 0 {
+		return
+	}
 
 	ds := r.database.
 		Select(goqu.L("rp.product_id")).
 		From(goqu.T(productTable).As("rp")).
-		Where(goqu.L("rp.product_id").Eq(productId)).
+		Where(goqu.L("rp.product_id").In(productIds)).
 		Where(goqu.L("rp.status_record").Neq("D"))
 
-	found, err := ds.ScanStruct(&result)
+	var products []FindProdctByIdsProduct
+	err = ds.ScanStructs(&products)
 	if err != nil {
 		return
 	}
 
-	if !found {
-		err = errors.New(entity.ErrProductNotFound)
-		return
-	}
+	result.Products = products
 	return
 }

@@ -33,11 +33,9 @@ func run() (err error) {
 	}
 
 	productService := service.NewProductService(typesenseRepo)
-	_ = service.NewProductSynchorizerService(pgsqlRepo)
+	productSynchorizerService := service.NewProductSynchorizerService(pgsqlRepo)
 
-	server := http.NewServer(cfg, typesenseRepo, productService)
-
-	err = server.ListenAndServe()
+	err = http.NewServer(cfg, pgsqlRepo, typesenseRepo, productService, productSynchorizerService).ListenAndServe()
 	if err != nil {
 		return
 	}
