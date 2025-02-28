@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/database/pgsql"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
-	http2 "github.com/AdiPP/go-typesense-product-service/internal/app/http"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/http"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 )
 
@@ -14,16 +16,26 @@ func run() (err error) {
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
+		err = fmt.Errorf("failed to load config: %s", err)
 		return
 	}
 
-	typesenseClient, err := typesense.NewClient(cfg.Typesense)
+	typesenseRepo, err := typesense.NewClient(cfg)
 	if err != nil {
+		err = fmt.Errorf("failed to load typesense repo: %s", err)
 		return
 	}
 
-	service := service.NewProductService(typesenseClient)
-	server := http2.NewServer(cfg.App, typesenseClient, service)
+	pgsqlRepo, err := pgsql.NewRepository(cfg)
+	if err != nil {
+		err = fmt.Errorf("failed to load pgsql repo: %s", err)
+		return
+	}
+
+	productService := service.NewProductService(typesenseRepo)
+	_ = service.NewProductSynchorizerService(pgsqlRepo)
+
+	server := http.NewServer(cfg, typesenseRepo, productService)
 
 	err = server.ListenAndServe()
 	if err != nil {

@@ -13,15 +13,15 @@ import (
 )
 
 type Server struct {
-	cfg             config.App
+	cfg             *config.Config
 	engine          *gin.Engine
-	typesenseClient *typesense.Client
+	typesenseClient *typesense.Repository
 	productService  *service.ProductService
 }
 
 func (s *Server) ListenAndServe() (err error) {
-	host := s.cfg.Host
-	port := s.cfg.Port
+	host := s.cfg.AppHost
+	port := s.cfg.AppPort
 
 	log.Printf("App running on %s:%v \n", host, port)
 
@@ -43,8 +43,8 @@ func (s *Server) ListenAndServe() (err error) {
 	return
 }
 
-func NewServer(cfg config.App, typesenseClient *typesense.Client, productService *service.ProductService) *Server {
-	switch cfg.GetEnv() {
+func NewServer(cfg *config.Config, typesenseClient *typesense.Repository, productService *service.ProductService) *Server {
+	switch cfg.GetAppEnv() {
 	case "development":
 		gin.SetMode(gin.DebugMode)
 	case "staging":

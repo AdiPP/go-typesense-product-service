@@ -10,11 +10,11 @@ import (
 	"github.com/typesense/typesense-go/v3/typesense"
 )
 
-type Client struct {
+type Repository struct {
 	client *typesense.Client
 }
 
-func (c *Client) init() (err error) {
+func (c *Repository) init() (err error) {
 	ok, err := c.client.Health(context.Background(), 2*time.Second)
 	if err != nil {
 		return
@@ -27,17 +27,17 @@ func (c *Client) init() (err error) {
 
 	log.Println("Success connect to typesense client")
 
-	err = c.initProductSchema()
+	// err = c.initProductSchema()
 	return
 }
 
-func NewClient(cfg config.Typesense) (c *Client, err error) {
-	c = &Client{
+func NewClient(cfg *config.Config) (c *Repository, err error) {
+	c = &Repository{
 		client: typesense.NewClient(
 			typesense.WithNodes([]string{
-				fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+				fmt.Sprintf("%s:%s", cfg.TypesenseDatabaseHost, cfg.TypesenseDatabasePort),
 			}),
-			typesense.WithAPIKey(cfg.APIKey),
+			typesense.WithAPIKey(cfg.TypesenseDatabaseAPIKey),
 			typesense.WithConnectionTimeout(2*time.Second),
 		),
 	}

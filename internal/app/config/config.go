@@ -2,28 +2,33 @@ package config
 
 import (
 	"log"
-	"os"
-	"strconv"
 
+	"github.com/caarlos0/env"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	App       App
-	Typesense Typesense
+	AppName string `env:"APP_NAME"`
+	AppEnv  string `env:"APP_ENV" envDefault:"production"`
+	AppHost string `env:"APP_HOST"`
+	AppPort int    `env:"APP_PORT"`
+
+	PgsqlDatabaseHost     string `env:"PGSQL_DB_HOST"`
+	PgsqlDatabasePort     string `env:"PGSQL_DB_PORT"`
+	PgsqlDatabaseDatabase string `env:"PGSQL_DB_DATABASE"`
+	PgsqlDatabaseUsername string `env:"PGSQL_DB_USERNAME"`
+	PgsqlDatabasePassword string `env:"PGSQL_DB_PASSWORD"`
+	PgsqlDatabaseSchema   string `env:"PGSQL_DB_SCHEMA"`
+
+	TypesenseDatabaseHost   string `env:"TYPESENSE_DB_HOST"`
+	TypesenseDatabasePort   string `env:"TYPESENSE_DB_PORT"`
+	TypesenseDatabaseAPIKey string `env:"TYPESENSE_DB_API_KEY"`
 }
 
-type App struct {
-	Name string `env:"APP_NAME"`
-	Env  string `env:"APP_ENV"`
-	Host string `env:"APP_HOST"`
-	Port int    `env:"APP_PORT"`
-}
-
-func (a App) GetEnv() string {
+func (a Config) GetAppEnv() string {
 	environment := ""
 
-	switch a.Env {
+	switch a.AppEnv {
 	case "dev", "development":
 		environment = "development"
 	case "stg", "staging":
@@ -35,36 +40,19 @@ func (a App) GetEnv() string {
 	return environment
 }
 
-type Typesense struct {
-	Host   string
-	Port   string
-	APIKey string
-}
-
 func LoadConfig() (cfg *Config, err error) {
 	err = godotenv.Load()
+	if err != nil {
+		log.Println("Warning: No .env file found, using system environment variables")
+	}
+
+	cfg = &Config{}
+
+	err = env.Parse(cfg)
 	if err != nil {
 		return
 	}
 
-	cfg = &Config{
-		App: App{
-			Name: os.Getenv("APP_NAME"),
-			Env:  os.Getenv("APP_ENV"),
-			Port: func() int {
-				port, err := strconv.Atoi(os.Getenv("APP_PORT"))
-				if err != nil {
-					log.Fatalf("Error converting APP_PORT to int: %v", err)
-				}
-				return port
-			}(),
-			Host: os.Getenv("APP_HOST"),
-		},
-		Typesense: Typesense{
-			Host:   os.Getenv("TYPESENSE_HOST"),
-			Port:   os.Getenv("TYPESENSE_PORT"),
-			APIKey: os.Getenv("TYPESENSE_API_KEY"),
-		},
-	}
+	log.Println("Success load to config")
 	return
 }

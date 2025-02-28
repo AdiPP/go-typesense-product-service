@@ -6,7 +6,7 @@ import (
 )
 
 type ProductService struct {
-	client *typesense.Client
+	client *typesense.Repository
 }
 
 type UpsertProductParam struct {
@@ -39,7 +39,7 @@ func (s *ProductService) Delete(param *DeleteProductParam) (product entity.Produ
 	return
 }
 
-func NewProductService(client *typesense.Client) *ProductService {
+func NewProductService(client *typesense.Repository) *ProductService {
 	o := new(ProductService)
 	o.client = client
 	return o

@@ -43,7 +43,7 @@ func newProductDocumentFromResponse(response map[string]any) productDocument {
 	}
 }
 
-func (c *Client) initProductSchema() (err error) {
+func (c *Repository) initProductSchema() (err error) {
 	collection, err := c.client.Collection(productCollectionName.string()).Retrieve(context.Background())
 	if err != nil && collection != nil {
 		return
@@ -71,7 +71,7 @@ func (c *Client) initProductSchema() (err error) {
 	return
 }
 
-func (c *Client) FindProduct(productID int64) (result entity.Product, err error) {
+func (c *Repository) FindProduct(productID int64) (result entity.Product, err error) {
 	result = entity.Product{}
 
 	if productID == 0 {
@@ -91,7 +91,7 @@ func (c *Client) FindProduct(productID int64) (result entity.Product, err error)
 	return
 }
 
-func (c *Client) UpsertProduct(product entity.Product) (result entity.Product, err error) {
+func (c *Repository) UpsertProduct(product entity.Product) (result entity.Product, err error) {
 	result = entity.Product{}
 
 	if product.ProductID == 0 {
@@ -112,7 +112,7 @@ func (c *Client) UpsertProduct(product entity.Product) (result entity.Product, e
 	return
 }
 
-func (c *Client) DeleteProduct(product entity.Product) (result entity.Product, err error) {
+func (c *Repository) DeleteProduct(product entity.Product) (result entity.Product, err error) {
 	result = entity.Product{}
 
 	if product.ProductID == 0 {
