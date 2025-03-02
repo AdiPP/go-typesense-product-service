@@ -1,50 +1,73 @@
 package pgsql
 
 import (
-	"time"
-
 	"github.com/doug-martin/goqu/v9"
+	"time"
 )
 
-type FindProdctByIdsProduct struct {
-	ProductID              int64      `json:"product_id" db:"product_id"`
-	ProductConditionID     int        `json:"product_condition_id" db:"product_condition_id"`
-	ShippingTypeID         *int       `json:"shipping_type_id,omitempty" db:"shipping_type_id"`
-	CategoryID             int        `json:"category_id" db:"category_id"`
-	UomID                  int        `json:"uom_id" db:"uom_id"`
-	StoreID                int        `json:"store_id" db:"store_id"`
-	ProductName            string     `json:"product_name" db:"product_name"`
-	ProductWeight          float64    `json:"product_weight" db:"product_weight"`
-	ProductLength          *float64   `json:"product_length,omitempty" db:"product_length"`
-	ProductWidth           *float64   `json:"product_width,omitempty" db:"product_width"`
-	ProductHeight          *float64   `json:"product_height,omitempty" db:"product_height"`
-	ProductDescription     *string    `json:"product_description,omitempty" db:"product_description"`
-	ProductSlug            *string    `json:"product_slug,omitempty" db:"product_slug"`
-	ProductMetaTitle       *string    `json:"product_meta_title,omitempty" db:"product_meta_title"`
-	ProductMetaDescription *string    `json:"product_meta_description,omitempty" db:"product_meta_description"`
-	ProductVideoURL        *string    `json:"product_video_url,omitempty" db:"product_video_url"`
-	IsInsurance            int        `json:"is_insurance" db:"is_insurance"`
-	IsPreorder             *int       `json:"is_preorder,omitempty" db:"is_preorder"`
-	DateIn                 time.Time  `json:"date_in" db:"date_in"`
-	UserIn                 string     `json:"user_in" db:"user_in"`
-	DateUp                 *time.Time `json:"date_up,omitempty" db:"date_up"`
-	UserUp                 *string    `json:"user_up,omitempty" db:"user_up"`
-	StatusRecord           string     `json:"status_record" db:"status_record"`
-	PreorderDay            *int       `json:"preorder_day,omitempty" db:"preorder_day"`
-	ProductUploadFileID    *int64     `json:"product_upload_file_id,omitempty" db:"product_upload_file_id"`
-	ProductSource          *string    `json:"product_source,omitempty" db:"product_source"`
-	ProductPreorderTypeID  *int64     `json:"product_preorder_type_id,omitempty" db:"product_preorder_type_id"`
-	PreorderTypeID         *int       `json:"preorder_type_id,omitempty" db:"preorder_type_id"`
-	PreorderTypeName       *string    `json:"preorder_type_name,omitempty" db:"preorder_type_name"`
+type FindAllProductsByProductIdsResultProduct struct {
+	ProductID               int64     `db:"product_id"`
+	ProductName             string    `db:"product_name"`
+	ProductWeight           float64   `db:"product_weight"`
+	UOMID                   int64     `db:"uom_id"`
+	UOMName                 string    `db:"uom_name"`
+	UOMAbbreviation         string    `db:"uom_abbreviation"`
+	IsInsurance             bool      `db:"is_insurance"`
+	IsPreorder              bool      `db:"is_preorder"`
+	PreorderDay             *int64    `db:"preorder_day"`
+	ProductPreorderTypeID   int64     `db:"product_preorder_type_id"`
+	ProductPreorderTypeName string    `db:"product_preorder_type_name"`
+	ProductConditionID      int64     `db:"product_condition_id"`
+	ProductConditionName    string    `db:"product_condition_name"`
+	ProductDescription      string    `db:"product_description"`
+	StoreID                 int64     `db:"store_id"`
+	StoreName               string    `db:"store_name"`
+	StoreSlug               string    `db:"slug" `
+	StoreStatusID           int64     `db:"store_status_id"`
+	StoreStatusName         string    `db:"store_status_name"`
+	UploadDate              time.Time `db:"upload_date"`
+	CategoryID              int64     `db:"category_id"`
+	CategoryCode            string    `db:"category_code"`
+	CategoryName            string    `db:"category_name"`
+	CategorySlug            string    `db:"category_slug"`
+	ProductHeight           float64   `db:"product_height"`
+	ProductLength           float64   `db:"product_length"`
+	ProductWidth            float64   `db:"product_width"`
+	ProductMetaTitle        string    `db:"product_meta_title"`
+	ProductMetaDescription  string    `db:"product_meta_description"`
+	ProductSlug             string    `db:"product_slug"`
+	StatusRecord            string    `db:"status_record"`
 }
 
-type FindProductByIdResult struct {
-	Products []FindProdctByIdsProduct
+type FindAllProductsByProductIdsResultProducts []FindAllProductsByProductIdsResultProduct
+
+func (p FindAllProductsByProductIdsResultProducts) FindByProductID(productID int64) FindAllProductsByProductIdsResultProduct {
+	for _, v := range p {
+		if v.ProductID == productID {
+			return v
+		}
+	}
+
+	return FindAllProductsByProductIdsResultProduct{}
 }
 
-func (r *Repository) FindAllProductByIds(productIds []int64) (result FindProductByIdResult, err error) {
-	result = FindProductByIdResult{
-		Products: []FindProdctByIdsProduct{},
+func (p FindAllProductsByProductIdsResultProducts) GetStoreIDs() []int64 {
+	var results []int64
+
+	for _, v := range p {
+		results = append(results, v.StoreID)
+	}
+
+	return results
+}
+
+type FindAllProductsByProductIdsResult struct {
+	Products FindAllProductsByProductIdsResultProducts
+}
+
+func (r *Repository) FindAllProductByIds(productIds []int64) (result FindAllProductsByProductIdsResult, err error) {
+	result = FindAllProductsByProductIdsResult{
+		Products: FindAllProductsByProductIdsResultProducts{},
 	}
 
 	if len(productIds) <= 0 {
@@ -52,17 +75,18 @@ func (r *Repository) FindAllProductByIds(productIds []int64) (result FindProduct
 	}
 
 	ds := r.database.
-		Select(goqu.L("rp.product_id")).
-		From(goqu.T(productTable).As("rp")).
-		Where(goqu.L("rp.product_id").In(productIds)).
-		Where(goqu.L("rp.status_record").Neq("D"))
+		From(goqu.L(findAllProductsByProductIdsQuery).As("d")).
+		Where(goqu.L("d.product_id in ?", productIds))
 
-	var products []FindProdctByIdsProduct
-	err = ds.ScanStructs(&products)
+	var products FindAllProductsByProductIdsResultProducts
+
+	err = ds.Executor().ScanStructs(&products)
 	if err != nil {
 		return
 	}
 
-	result.Products = products
+	result = FindAllProductsByProductIdsResult{
+		Products: products,
+	}
 	return
 }

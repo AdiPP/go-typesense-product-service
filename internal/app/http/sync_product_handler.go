@@ -7,22 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type syncProductHandler struct {
-	productSynchorizerService *service.ProductSynchorizerService
+type syncProductsHandler struct {
+	productSynchronizerService *service.ProductSynchronizerService
 }
 
 type syncProductRequest struct {
 	ProductIDs []int64 `json:"product_ids"`
 }
 
-func (h *syncProductHandler) handle(c *gin.Context) {
+func (h *syncProductsHandler) handle(c *gin.Context) {
 	var req syncProductRequest
 	if c.ShouldBindBodyWithJSON(&req) != nil {
 		c.String(http.StatusUnprocessableEntity, "Failed")
 		return
 	}
 
-	err := h.productSynchorizerService.SyncBatch(&service.SyncProductBatchParam{
+	err := h.productSynchronizerService.SyncBatch(&service.SyncBatchProductsParam{
 		ProductIDs: req.ProductIDs,
 	})
 	if err != nil {
@@ -30,11 +30,13 @@ func (h *syncProductHandler) handle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"status": "success",
+	})
 }
 
-func newSyncProductHandler(productSynchorizerService *service.ProductSynchorizerService) *syncProductHandler {
-	o := new(syncProductHandler)
-	o.productSynchorizerService = productSynchorizerService
+func newSyncProductsHandler(productSynchronizerService *service.ProductSynchronizerService) *syncProductsHandler {
+	o := new(syncProductsHandler)
+	o.productSynchronizerService = productSynchronizerService
 	return o
 }

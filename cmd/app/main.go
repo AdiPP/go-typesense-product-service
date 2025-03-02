@@ -12,15 +12,13 @@ import (
 )
 
 func run() (err error) {
-	log.Println("Initializing App...")
-
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		err = fmt.Errorf("failed to load config: %s", err)
 		return
 	}
 
-	typesenseRepo, err := typesense.NewClient(cfg)
+	tpRepo, err := typesense.NewRepository(cfg)
 	if err != nil {
 		err = fmt.Errorf("failed to load typesense repo: %s", err)
 		return
@@ -32,10 +30,15 @@ func run() (err error) {
 		return
 	}
 
-	productService := service.NewProductService(typesenseRepo)
-	productSynchorizerService := service.NewProductSynchorizerService(pgsqlRepo)
+	productSynchronizerService := service.
+		NewProductSynchronizerService(pgsqlRepo, tpRepo)
 
-	err = http.NewServer(cfg, pgsqlRepo, typesenseRepo, productService, productSynchorizerService).ListenAndServe()
+	err = http.NewServer(
+		cfg,
+		pgsqlRepo,
+		tpRepo,
+		productSynchronizerService,
+	).ListenAndServe()
 	if err != nil {
 		return
 	}

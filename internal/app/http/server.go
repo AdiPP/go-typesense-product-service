@@ -14,12 +14,11 @@ import (
 )
 
 type Server struct {
-	cfg                       *config.Config
-	engine                    *gin.Engine
-	pgsqlRepo                 *pgsql.Repository
-	typesenseRepo             *typesense.Repository
-	productService            *service.ProductService
-	productSynchorizerService *service.ProductSynchorizerService
+	cfg       *config.Config
+	engine    *gin.Engine
+	pgsqlRepo *pgsql.Repository
+	tpRepo    *typesense.Repository
+	psService *service.ProductSynchronizerService
 }
 
 func (s *Server) ListenAndServe() (err error) {
@@ -46,7 +45,12 @@ func (s *Server) ListenAndServe() (err error) {
 	return
 }
 
-func NewServer(cfg *config.Config, pgsqlReqpo *pgsql.Repository, typesenseRepo *typesense.Repository, productService *service.ProductService, productSynchorizerService *service.ProductSynchorizerService) *Server {
+func NewServer(
+	cfg *config.Config,
+	pgsqlReqpo *pgsql.Repository,
+	tpRepo *typesense.Repository,
+	psService *service.ProductSynchronizerService,
+) *Server {
 	switch cfg.GetAppEnv() {
 	case "development":
 		gin.SetMode(gin.DebugMode)
@@ -60,9 +64,8 @@ func NewServer(cfg *config.Config, pgsqlReqpo *pgsql.Repository, typesenseRepo *
 	s.cfg = cfg
 	s.engine = gin.Default()
 	s.pgsqlRepo = pgsqlReqpo
-	s.typesenseRepo = typesenseRepo
-	s.productService = productService
-	s.productSynchorizerService = productSynchorizerService
+	s.tpRepo = tpRepo
+	s.psService = psService
 
 	s.initRouter()
 
