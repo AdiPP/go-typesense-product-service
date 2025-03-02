@@ -42,7 +42,6 @@ func NewRepository(cfg *config.Config) (repo *Repository, err error) {
 	}
 
 	err = pgDb.Ping()
-	fmt.Println(err)
 	if err != nil {
 		return
 	}

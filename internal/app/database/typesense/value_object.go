@@ -7,5 +7,5 @@ func (c collectionName) string() string {
 }
 
 var (
-	productCollectionName collectionName = "products"
+	productSkuCollectionName collectionName = "rns_product_skus_001"
 )

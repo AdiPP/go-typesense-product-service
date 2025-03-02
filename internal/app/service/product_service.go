@@ -14,11 +14,11 @@ type UpsertProductParam struct {
 	ProductName string
 }
 
-func (s *ProductService) Upsert(param *UpsertProductParam) (product entity.Product, err error) {
-	product, err = s.client.UpsertProduct(entity.Product{
-		ProductID:   param.ProductID,
-		ProductName: param.ProductName,
-	})
+func (s *ProductService) Upsert(param *UpsertProductParam) (product entity.ProductSku, err error) {
+	// product, err = s.client.UpsertProductSku(entity.ProductSku{
+	// 	ProductID:   param.ProductID,
+	// 	ProductName: param.ProductName,
+	// })
 	return
 }
 
@@ -26,13 +26,13 @@ type DeleteProductParam struct {
 	ProductID int64
 }
 
-func (s *ProductService) Delete(param *DeleteProductParam) (product entity.Product, err error) {
-	product, err = s.client.FindProduct(param.ProductID)
+func (s *ProductService) Delete(param *DeleteProductParam) (product entity.ProductSku, err error) {
+	product, err = s.client.FindProductSku(param.ProductID)
 	if err != nil {
 		return
 	}
 
-	product, err = s.client.DeleteProduct(product)
+	product, err = s.client.DeleteProductSku(product)
 	if err != nil {
 		return
 	}

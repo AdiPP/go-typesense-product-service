@@ -19,7 +19,7 @@ type Server struct {
 	pgsqlRepo                 *pgsql.Repository
 	typesenseRepo             *typesense.Repository
 	productService            *service.ProductService
-	productSynchorizerService *service.ProductSynchorizerService
+	productSynchorizerService *service.ProductSynchronizerService
 }
 
 func (s *Server) ListenAndServe() (err error) {
@@ -46,7 +46,7 @@ func (s *Server) ListenAndServe() (err error) {
 	return
 }
 
-func NewServer(cfg *config.Config, pgsqlReqpo *pgsql.Repository, typesenseRepo *typesense.Repository, productService *service.ProductService, productSynchorizerService *service.ProductSynchorizerService) *Server {
+func NewServer(cfg *config.Config, pgsqlReqpo *pgsql.Repository, typesenseRepo *typesense.Repository, productService *service.ProductService, productSynchorizerService *service.ProductSynchronizerService) *Server {
 	switch cfg.GetAppEnv() {
 	case "development":
 		gin.SetMode(gin.DebugMode)

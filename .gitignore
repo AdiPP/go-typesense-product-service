@@ -2,3 +2,4 @@ typesense-data
 .env
 .air.toml
 tmp
+.idea

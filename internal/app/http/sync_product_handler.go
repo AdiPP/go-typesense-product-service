@@ -8,7 +8,7 @@ import (
 )
 
 type syncProductHandler struct {
-	productSynchorizerService *service.ProductSynchorizerService
+	productSynchorizerService *service.ProductSynchronizerService
 }
 
 type syncProductRequest struct {
@@ -22,7 +22,7 @@ func (h *syncProductHandler) handle(c *gin.Context) {
 		return
 	}
 
-	err := h.productSynchorizerService.SyncBatch(&service.SyncProductBatchParam{
+	err := h.productSynchorizerService.SyncBatch(&service.SyncBatchProductsParam{
 		ProductIDs: req.ProductIDs,
 	})
 	if err != nil {
@@ -33,7 +33,7 @@ func (h *syncProductHandler) handle(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func newSyncProductHandler(productSynchorizerService *service.ProductSynchorizerService) *syncProductHandler {
+func newSyncProductHandler(productSynchorizerService *service.ProductSynchronizerService) *syncProductHandler {
 	o := new(syncProductHandler)
 	o.productSynchorizerService = productSynchorizerService
 	return o

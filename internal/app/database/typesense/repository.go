@@ -26,12 +26,10 @@ func (c *Repository) init() (err error) {
 	}
 
 	log.Println("Success connect to typesense client")
-
-	// err = c.initProductSchema()
 	return
 }
 
-func NewClient(cfg *config.Config) (c *Repository, err error) {
+func NewRepository(cfg *config.Config) (c *Repository, err error) {
 	c = &Repository{
 		client: typesense.NewClient(
 			typesense.WithNodes([]string{
