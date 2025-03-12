@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
-	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/sync"
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5/pgconn"
 	"log"
@@ -14,10 +14,10 @@ import (
 
 type Service struct {
 	cfg       *config.Config
-	psService *service.ProductSynchronizerService
+	psService *sync.Service
 }
 
-func NewService(cfg *config.Config, psService *service.ProductSynchronizerService) *Service {
+func NewService(cfg *config.Config, psService *sync.Service) *Service {
 	return &Service{cfg: cfg, psService: psService}
 }
 

@@ -1,9 +1,10 @@
-package service
+package sync
 
 import (
 	"fmt"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/pgsql"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/google/uuid"
 	"log"
 	"os"
@@ -12,20 +13,20 @@ import (
 	"time"
 )
 
-type ProductSynchronizerService struct {
+type Service struct {
 	pgsqlRepo     *pgsql.Repository
 	typesenseRepo *typesense.Repository
 }
 
-func NewProductSynchronizerService(pgsqlRepo *pgsql.Repository, typesenseRepo *typesense.Repository) *ProductSynchronizerService {
-	return &ProductSynchronizerService{pgsqlRepo: pgsqlRepo, typesenseRepo: typesenseRepo}
+func NewService(pgsqlRepo *pgsql.Repository, tpRepo *typesense.Repository) *Service {
+	return &Service{pgsqlRepo: pgsqlRepo, typesenseRepo: tpRepo}
 }
 
-type SyncBatchProductsParam struct {
+type BatchProductsParam struct {
 	ProductIDs []int64
 }
 
-func (p *ProductSynchronizerService) SyncBatchAsync(param *SyncBatchProductsParam) {
+func (p *Service) SyncBatchAsync(param *BatchProductsParam) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -39,7 +40,7 @@ func (p *ProductSynchronizerService) SyncBatchAsync(param *SyncBatchProductsPara
 	}()
 }
 
-func (p *ProductSynchronizerService) SyncBatch(param *SyncBatchProductsParam) (err error) {
+func (p *Service) SyncBatch(param *BatchProductsParam) (err error) {
 	productsResp, err := p.pgsqlRepo.FindAllProductByIds(param.ProductIDs)
 	if err != nil {
 		return
@@ -146,20 +147,20 @@ func (p *ProductSynchronizerService) SyncBatch(param *SyncBatchProductsParam) (e
 					DiscountTypeID:              productDiscount.DiscountTypeID,
 					DiscountTypeName:            productDiscount.DiscountTypeName,
 					DiscountValue:               productDiscount.DiscountValue,
-					FormattedDiscountPercentage: FormattedDiscountPercentage(productDiscount.DiscountPercentage),
-					FormattedDiscountValue:      FormattedDiscountValue(productDiscount.DiscountValue, productDiscount.DiscountTypeID),
-					FormattedProductPrice:       FormatRupiahFromInt64(productSKU.ProductPrice),
-					FormattedSellingPrice:       FormatRupiahFromInt64(sellingPrince),
+					FormattedDiscountPercentage: service.FormattedDiscountPercentage(productDiscount.DiscountPercentage),
+					FormattedDiscountValue:      service.FormattedDiscountValue(productDiscount.DiscountValue, productDiscount.DiscountTypeID),
+					FormattedProductPrice:       service.FormatRupiahFromInt64(productSKU.ProductPrice),
+					FormattedSellingPrice:       service.FormatRupiahFromInt64(sellingPrince),
 					IsDefault:                   productSKU.IsDefault,
 					ProductID:                   productSKU.ProductID,
 					ProductImage:                productImage.ProductImage,
-					ProductImageNoBackground:    StringFromPtr(productImage.ProductImageNoBackground),
-					ProductImageNoBackgroundURL: fmt.Sprintf("%s/%s", os.Getenv("CDN_IMAGE_URL"), StringFromPtr(productImage.ProductImageNoBackground)),
+					ProductImageNoBackground:    service.StringFromPtr(productImage.ProductImageNoBackground),
+					ProductImageNoBackgroundURL: fmt.Sprintf("%s/%s", os.Getenv("CDN_IMAGE_URL"), service.StringFromPtr(productImage.ProductImageNoBackground)),
 					ProductImageURL:             fmt.Sprintf("%s/%s", os.Getenv("CDN_IMAGE_URL"), productImage.ProductImage),
 					ProductName:                 product.ProductName,
 					ProductPrice:                productSKU.ProductPrice,
-					ProductSkuMPN:               StringFromPtr(productSKU.ProductSKUMPN),
-					SellerSkuNumber:             StringFromPtr(productSKU.ProductSKUMPN),
+					ProductSkuMPN:               service.StringFromPtr(productSKU.ProductSKUMPN),
+					SellerSkuNumber:             service.StringFromPtr(productSKU.ProductSKUMPN),
 					ProductSkuName:              productSKUName,
 					ProductSkuNumber:            productSKU.ProductSKUNumber,
 					ProductSold:                 productSold.Total,
@@ -174,10 +175,10 @@ func (p *ProductSynchronizerService) SyncBatch(param *SyncBatchProductsParam) (e
 					UOMName:                     product.UOMName,
 					IsInsurance:                 product.IsInsurance,
 					IsPreorder:                  product.IsPreorder,
-					PreorderDay:                 Int64FromPtr(product.PreorderDay),
-					PreorderTypeID:              Int64FromPtr(product.ProductPreorderTypeID),
-					PreorderTypeName:            StringFromPtr(product.ProductPreorderTypeName),
-					FormattedPreorderLabel:      fmt.Sprintf("%v %s", Int64FromPtr(product.PreorderDay), product.ProductPreorderTypeName),
+					PreorderDay:                 service.Int64FromPtr(product.PreorderDay),
+					PreorderTypeID:              service.Int64FromPtr(product.ProductPreorderTypeID),
+					PreorderTypeName:            service.StringFromPtr(product.ProductPreorderTypeName),
+					FormattedPreorderLabel:      fmt.Sprintf("%v %s", service.Int64FromPtr(product.PreorderDay), product.ProductPreorderTypeName),
 					ProductConditionID:          product.ProductConditionID,
 					ProductConditionName:        product.ProductConditionName,
 					ProductDescription:          product.ProductDescription,
@@ -201,7 +202,7 @@ func (p *ProductSynchronizerService) SyncBatch(param *SyncBatchProductsParam) (e
 					StoreStatusName:             product.StoreStatusName,
 					StoreURL:                    fmt.Sprintf("%s/p/%s", os.Getenv("BUYER_URL"), product.StoreSlug),
 					Timestamp:                   batchTimestamp.Unix(),
-					TotalRating:                 FormatShortNumber(float64(productReview.ReviewsCount), 1),
+					TotalRating:                 service.FormatShortNumber(float64(productReview.ReviewsCount), 1),
 					UploadDate:                  product.UploadDate.Unix(),
 					Categories:                  typesense.ProductSKUCategoryDocuments{},
 					ProductImages:               typesense.ProductSKUProductImageDocuments{},

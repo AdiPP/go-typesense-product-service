@@ -6,12 +6,12 @@ package syncprododucts
 import (
 	"fmt"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/sync"
 	"log"
 	"strconv"
 
 	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/pgsql"
-	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/spf13/cobra"
 )
 
@@ -54,8 +54,8 @@ to quickly create a Cobra application.`,
 			log.Fatalf("Error: %v", err)
 		}
 
-		err = service.NewProductSynchronizerService(pgsqlRepo, typesenseRepo).
-			SyncBatch(&service.SyncBatchProductsParam{
+		err = sync.NewService(pgsqlRepo, typesenseRepo).
+			SyncBatch(&sync.BatchProductsParam{
 				ProductIDs: productIds,
 			})
 		if err != nil {

@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/sync"
 	"log"
 	"net/http"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/pgsql"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
-	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +18,7 @@ type Server struct {
 	engine    *gin.Engine
 	pgsqlRepo *pgsql.Repository
 	tpRepo    *typesense.Repository
-	psService *service.ProductSynchronizerService
+	psService *sync.Service
 }
 
 func (s *Server) ListenAndServe() (err error) {
@@ -49,7 +49,7 @@ func NewServer(
 	cfg *config.Config,
 	pgsqlReqpo *pgsql.Repository,
 	tpRepo *typesense.Repository,
-	psService *service.ProductSynchronizerService,
+	psService *sync.Service,
 ) *Server {
 	switch cfg.GetAppEnv() {
 	case "development":

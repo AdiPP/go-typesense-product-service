@@ -1,14 +1,14 @@
 package http
 
 import (
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/sync"
 	"net/http"
 
-	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 	"github.com/gin-gonic/gin"
 )
 
 type syncProductsHandler struct {
-	productSynchronizerService *service.ProductSynchronizerService
+	productSynchronizerService *sync.Service
 }
 
 type syncProductRequest struct {
@@ -22,7 +22,7 @@ func (h *syncProductsHandler) handle(c *gin.Context) {
 		return
 	}
 
-	err := h.productSynchronizerService.SyncBatch(&service.SyncBatchProductsParam{
+	err := h.productSynchronizerService.SyncBatch(&sync.BatchProductsParam{
 		ProductIDs: req.ProductIDs,
 	})
 	if err != nil {
@@ -35,7 +35,7 @@ func (h *syncProductsHandler) handle(c *gin.Context) {
 	})
 }
 
-func newSyncProductsHandler(productSynchronizerService *service.ProductSynchronizerService) *syncProductsHandler {
+func newSyncProductsHandler(productSynchronizerService *sync.Service) *syncProductsHandler {
 	o := new(syncProductsHandler)
 	o.productSynchronizerService = productSynchronizerService
 	return o

@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/AdiPP/go-typesense-product-service/internal/app/service/cdc"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/sync"
 	"log"
 
 	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/pgsql"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/database/typesense"
 	"github.com/AdiPP/go-typesense-product-service/internal/app/http"
-	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
 )
 
 func run() (err error) {
@@ -29,7 +29,7 @@ func run() (err error) {
 		log.Fatalf("failed to load pgsql repo: %s", err)
 	}
 
-	psService := service.NewProductSynchronizerService(pgsqlRepo, tpRepo)
+	psService := sync.NewService(pgsqlRepo, tpRepo)
 	cdcService := cdc.NewService(cfg, psService)
 
 	go cdcService.StartCDC()

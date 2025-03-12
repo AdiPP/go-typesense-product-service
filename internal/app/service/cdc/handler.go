@@ -2,7 +2,7 @@ package cdc
 
 import (
 	"fmt"
-	"github.com/AdiPP/go-typesense-product-service/internal/app/service"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/sync"
 	"github.com/jackc/pglogrepl"
 	"log"
 	"strconv"
@@ -57,7 +57,7 @@ func (s *Service) processEvent(msg pglogrepl.Message) {
 		}
 
 		log.Printf("Triggering SyncBatchAsync for product_id: %d", productID)
-		s.psService.SyncBatchAsync(&service.SyncBatchProductsParam{
+		s.psService.SyncBatchAsync(&sync.BatchProductsParam{
 			ProductIDs: []int64{productID},
 		})
 	case *pglogrepl.DeleteMessage:
