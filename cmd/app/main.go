@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/AdiPP/go-typesense-product-service/internal/app/service/cdc"
 	"log"
 
 	"github.com/AdiPP/go-typesense-product-service/internal/app/config"
@@ -12,35 +12,30 @@ import (
 )
 
 func run() (err error) {
+	log.Print("Starting APP...")
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		err = fmt.Errorf("failed to load config: %s", err)
-		return
+		log.Fatalf("failed to load config: %s", err)
 	}
 
 	tpRepo, err := typesense.NewRepository(cfg)
 	if err != nil {
-		err = fmt.Errorf("failed to load typesense repo: %s", err)
-		return
+		log.Fatalf("failed to load typesense repo: %s", err)
 	}
 
 	pgsqlRepo, err := pgsql.NewRepository(cfg)
 	if err != nil {
-		err = fmt.Errorf("failed to load pgsql repo: %s", err)
-		return
+		log.Fatalf("failed to load pgsql repo: %s", err)
 	}
 
-	productSynchronizerService := service.
-		NewProductSynchronizerService(pgsqlRepo, tpRepo)
+	psService := service.NewProductSynchronizerService(pgsqlRepo, tpRepo)
+	cdcService := cdc.NewService(cfg, psService)
 
-	err = http.NewServer(
-		cfg,
-		pgsqlRepo,
-		tpRepo,
-		productSynchronizerService,
-	).ListenAndServe()
-	if err != nil {
-		return
+	go cdcService.StartCDC()
+
+	if err = http.NewServer(cfg, pgsqlRepo, tpRepo, psService).ListenAndServe(); err != nil {
+		log.Fatalf("failed to start server: %s", err)
 	}
 	return
 }

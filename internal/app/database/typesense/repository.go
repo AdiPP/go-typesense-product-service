@@ -14,21 +14,6 @@ type Repository struct {
 	client *typesense.Client
 }
 
-func (c *Repository) init() (err error) {
-	ok, err := c.client.Health(context.Background(), 2*time.Second)
-	if err != nil {
-		return
-	}
-
-	if !ok {
-		err = fmt.Errorf("failed connect to typesense client")
-		return
-	}
-
-	log.Println("Success connect to typesense client")
-	return
-}
-
 func NewRepository(cfg *config.Config) (c *Repository, err error) {
 	c = &Repository{
 		client: typesense.NewClient(
@@ -40,6 +25,10 @@ func NewRepository(cfg *config.Config) (c *Repository, err error) {
 		),
 	}
 
-	err = c.init()
+	if ok, err := c.client.Health(context.Background(), 2*time.Second); err != nil || !ok {
+		log.Fatal(fmt.Errorf("could not connect to typesense database: %w", err))
+	}
+
+	log.Print("Success connect to typesense client")
 	return
 }

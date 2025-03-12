@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/caarlos0/env"
@@ -25,10 +26,33 @@ type Config struct {
 	TypesenseDatabaseAPIKey string `env:"TYPESENSE_DB_API_KEY"`
 }
 
-func (a Config) GetAppEnv() string {
+func (c Config) GetPgsqlConnString() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s",
+		c.PgsqlDatabaseUsername,
+		c.PgsqlDatabasePassword,
+		c.PgsqlDatabaseHost,
+		c.PgsqlDatabasePort,
+		c.PgsqlDatabaseDatabase,
+		c.PgsqlDatabaseSchema,
+	)
+}
+
+func (c Config) GetPgsqlConnStringCdc() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?replication=database",
+		c.PgsqlDatabaseUsername,
+		c.PgsqlDatabasePassword,
+		c.PgsqlDatabaseHost,
+		c.PgsqlDatabasePort,
+		c.PgsqlDatabaseDatabase,
+	)
+}
+
+func (c Config) GetAppEnv() string {
 	environment := ""
 
-	switch a.AppEnv {
+	switch c.AppEnv {
 	case "dev", "development":
 		environment = "development"
 	case "stg", "staging":
@@ -41,18 +65,15 @@ func (a Config) GetAppEnv() string {
 }
 
 func LoadConfig() (cfg *Config, err error) {
-	err = godotenv.Load()
-	if err != nil {
-		log.Println("Warning: No .env file found, using system environment variables")
+	if err = godotenv.Load(); err != nil {
+		log.Fatal("Warning: No .env file found, using system environment variables")
 	}
 
 	cfg = &Config{}
-
-	err = env.Parse(cfg)
-	if err != nil {
-		return
+	if err = env.Parse(cfg); err != nil {
+		log.Fatalf("Failed to parse config: %s", err)
 	}
 
-	log.Println("Success load to config")
+	log.Print("Success load config")
 	return
 }

@@ -25,11 +25,27 @@ type SyncBatchProductsParam struct {
 	ProductIDs []int64
 }
 
+func (p *ProductSynchronizerService) SyncBatchAsync(param *SyncBatchProductsParam) {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("Recovered from panic in SyncBatchAsync: %v", r)
+			}
+		}()
+
+		if err := p.SyncBatch(param); err != nil {
+			log.Printf("Error in SyncBatchAsync: %v", err)
+		}
+	}()
+}
+
 func (p *ProductSynchronizerService) SyncBatch(param *SyncBatchProductsParam) (err error) {
 	productsResp, err := p.pgsqlRepo.FindAllProductByIds(param.ProductIDs)
 	if err != nil {
 		return
 	}
+
+	fmt.Println(len(productsResp.Products))
 
 	productSkusResp, err := p.pgsqlRepo.FindAllProductSkusByProductIds(param.ProductIDs)
 	if err != nil {
@@ -159,8 +175,8 @@ func (p *ProductSynchronizerService) SyncBatch(param *SyncBatchProductsParam) (e
 					IsInsurance:                 product.IsInsurance,
 					IsPreorder:                  product.IsPreorder,
 					PreorderDay:                 Int64FromPtr(product.PreorderDay),
-					PreorderTypeID:              product.ProductPreorderTypeID,
-					PreorderTypeName:            product.ProductPreorderTypeName,
+					PreorderTypeID:              Int64FromPtr(product.ProductPreorderTypeID),
+					PreorderTypeName:            StringFromPtr(product.ProductPreorderTypeName),
 					FormattedPreorderLabel:      fmt.Sprintf("%v %s", Int64FromPtr(product.PreorderDay), product.ProductPreorderTypeName),
 					ProductConditionID:          product.ProductConditionID,
 					ProductConditionName:        product.ProductConditionName,

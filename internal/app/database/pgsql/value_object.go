@@ -50,7 +50,7 @@ from
 	rns_product rp
 join rns_uom ru on
 	rp.uom_id = ru.uom_id
-join rns_product_preorder_type rppt on
+left join rns_product_preorder_type rppt on
 	rp.product_preorder_type_id = rppt.product_preorder_type_id
 join rns_product_condition rpc on
 	rp.product_condition_id = rpc.product_condition_id
@@ -62,7 +62,6 @@ join rns_category rc on
 	rc.category_id = rp.category_id
 where
 	ru.status_record <> 'D'
-	and rppt.status_record <> 'D'
 	and rpc.status_record <> 'D'
 	and rss.status_record <> 'D'
 	and rc.status_record <> 'D'

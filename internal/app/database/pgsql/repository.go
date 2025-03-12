@@ -15,41 +15,25 @@ type Repository struct {
 	database *goqu.Database
 }
 
-func (r *Repository) init() (err error) {
-
-	return
-}
-
 func NewRepository(cfg *config.Config) (repo *Repository, err error) {
-	dialect := goqu.Dialect("postgres")
+	const dialect = "postgres"
 
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable search_path=%s",
-		cfg.PgsqlDatabaseHost,
-		cfg.PgsqlDatabasePort,
-		cfg.PgsqlDatabaseUsername,
-		cfg.PgsqlDatabasePassword,
-		cfg.PgsqlDatabaseDatabase,
-		cfg.PgsqlDatabaseSchema,
-	)
-
-	pgDb, err := sql.Open(
-		"postgres",
-		dsn,
+	db, err := sql.Open(
+		dialect,
+		cfg.GetPgsqlConnString(),
 	)
 	if err != nil {
-		return
+		log.Fatal(fmt.Errorf("error open to pgsql database: %w", err))
 	}
 
-	err = pgDb.Ping()
-	if err != nil {
-		return
+	if err = db.Ping(); err != nil {
+		log.Fatal(fmt.Errorf("error connecting to pgsql database: %w", err))
 	}
 
-	log.Println("Success connect to pgsql database")
+	log.Print("success connect to pgsql database")
 
 	repo = &Repository{
-		database: dialect.DB(pgDb),
+		database: goqu.Dialect(dialect).DB(db),
 	}
 	return
 }

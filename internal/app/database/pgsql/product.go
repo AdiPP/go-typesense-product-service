@@ -15,8 +15,8 @@ type FindAllProductsByProductIdsResultProduct struct {
 	IsInsurance             bool      `db:"is_insurance"`
 	IsPreorder              bool      `db:"is_preorder"`
 	PreorderDay             *int64    `db:"preorder_day"`
-	ProductPreorderTypeID   int64     `db:"product_preorder_type_id"`
-	ProductPreorderTypeName string    `db:"product_preorder_type_name"`
+	ProductPreorderTypeID   *int64    `db:"product_preorder_type_id"`
+	ProductPreorderTypeName *string   `db:"product_preorder_type_name"`
 	ProductConditionID      int64     `db:"product_condition_id"`
 	ProductConditionName    string    `db:"product_condition_name"`
 	ProductDescription      string    `db:"product_description"`
